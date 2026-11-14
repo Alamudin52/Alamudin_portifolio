@@ -1,0 +1,13 @@
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+
+# Local development artifacts
+.history/
+*.log
+node_modules/
+.env
+.env.*
+!.env.example
