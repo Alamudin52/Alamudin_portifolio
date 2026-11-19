@@ -3,30 +3,10 @@ window.portfolioProjects = [
   {
     title: "BusApp",
     category: "Transport & booking",
-    description: "A bus reservation and management application concept designed to make it easier to explore trips and manage bookings.",
+    description: "A bus reservation and management application for exploring trips and managing bookings.",
     image: "assets/images/project-busapp.png",
     imageAlt: "Abstract blue placeholder artwork for the BusApp project",
     technologies: ["Reservation", "Trip management", "Web application"],
-    githubUrl: "",
-    liveUrl: ""
-  },
-  {
-    title: "E-commerce Website",
-    category: "Online shopping",
-    description: "An e-commerce website concept focused on presenting products clearly and creating a straightforward shopping experience.",
-    image: "assets/images/project-ecommerce.png",
-    imageAlt: "Abstract cyan placeholder artwork for the e-commerce project",
-    technologies: ["Product catalog", "Shopping experience", "Web application"],
-    githubUrl: "",
-    liveUrl: ""
-  },
-  {
-    title: "Faayidaa Store",
-    category: "Digital storefront",
-    description: "A digital storefront concept for Faayidaa Store, with a focus on organized product discovery and a clean, welcoming interface.",
-    image: "assets/images/project-store.png",
-    imageAlt: "Abstract violet placeholder artwork for the Faayidaa Store project",
-    technologies: ["Digital storefront", "Product discovery", "Web application"],
     githubUrl: "",
     liveUrl: ""
   }
