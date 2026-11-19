@@ -1,42 +1,34 @@
 # Alamudin Portfolio
 
-A responsive personal developer portfolio built with HTML, CSS, Bootstrap 5, Bootstrap Icons and vanilla JavaScript. The contact form uses a small Node.js/Express API that delivers messages through Resend; the API does not save submissions to a database.
-
-This project is distributed under the MIT License; see [`LICENSE`](./LICENSE).
+A responsive personal developer portfolio built with HTML, CSS, Bootstrap 5, Bootstrap Icons and vanilla JavaScript. GitHub Pages serves the static website, and Formspree can deliver the contact form to your inbox without a custom server or domain. The project is distributed under the MIT License; see [`LICENSE`](./LICENSE).
 
 ## Run locally
 
-1. Install Node.js 20 or newer.
-2. In this folder, run `npm install`.
-3. Copy `.env.example` to `.env` and set `RESEND_API_KEY`, `CONTACT_TO_EMAIL` and `CONTACT_FROM_EMAIL`. The sender address must be verified with Resend. Never commit `.env` or paste API keys into source files.
-4. Run `npm run dev` to start the API on `http://localhost:3000`.
-5. In VS Code, open `index.html` with Live Server. Live Server normally uses `http://127.0.0.1:5500`.
-6. To test real form delivery locally, set `apiBaseUrl` in `js/main.js` to `http://localhost:3000` and add the Live Server origin to `ALLOWED_ORIGINS` if you use a non-default port.
+1. Open this folder in VS Code.
+2. Install the **Live Server** extension if needed.
+3. Open `index.html` with Live Server (or select **Go Live** in VS Code).
 
-Run the API tests with `npm test`. The `/api/health` endpoint can be used to check the running API.
+The site uses CDN-hosted Bootstrap, Bootstrap Icons and Inter from Google Fonts, so an internet connection is needed for those assets.
 
-## Configure before deploying
+## Connect the contact form
 
-- On localhost, `js/main.js` automatically uses the local API at `http://localhost:3000`. Before deployment, set `apiBaseUrl` to the Render API origin. Keep it empty to retain the draft/copy-only form behavior.
-- `CONTACT_TO_EMAIL` is the inbox that receives messages. `CONTACT_FROM_EMAIL` must be a sender address verified by your Resend account.
-- Configure `RESEND_API_KEY`, `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `NODE_ENV=production` and `ALLOWED_ORIGINS` in the API host’s environment/secrets dashboard. For GitHub Pages, `ALLOWED_ORIGINS` is the site origin, such as `https://your-user.github.io` (no repository path).
-- Never expose the Resend key in JavaScript, GitHub Pages files, or a committed `.env` file. `.env` is ignored by Git.
-- The Cyber Security PDF does not state its issuer; no Android certificate award date was available in the supplied PDF.
+1. Create a form at [Formspree](https://formspree.io/) and set its notification recipient to `barbaadaajannataa@gmail.com`.
+2. Verify the recipient if Formspree asks.
+3. Copy the endpoint Formspree gives you. It looks like `https://formspree.io/f/xxxxxxxx`.
+4. Open `js/main.js` and set `formspreeEndpoint` to that URL. The endpoint is a public form identifier, not an API secret.
+5. Commit and push the change to `main`. GitHub Actions will redeploy the site.
+6. Submit a test through the published site and confirm the message arrives in Gmail.
 
-The API validates submissions, limits repeated requests and forwards valid messages to Resend. The website reports success only after the email provider accepts the request. Messages are not stored in a project database.
+Until a real Formspree endpoint is configured, the form validates the fields and offers to copy a draft; it does not claim to send messages. Formspree handles delivery and notifications. There is no custom API server or database in this setup.
 
-## Deploy the website and API
+## GitHub Pages
 
-GitHub Pages hosts the static portfolio only; it cannot run the Express API. Host the API separately (for example, as a Render Web Service):
+The site is already configured for GitHub Pages and deploys from the `main` branch through the workflow in `.github/workflows/pages.yml`.
 
-1. Create a GitHub repository and push this project. Keep `.env` out of the repository.
-2. In Render, create a Blueprint from the repository and use the included `render.yaml` to configure the Web Service. Alternatively, create a Web Service manually with `npm install` as the build command and `npm start` as the start command.
-3. Add the required Resend settings and `ALLOWED_ORIGINS` as Render environment variables. Use a Resend-verified sender address.
-4. Once Render gives the API its public URL, set `apiBaseUrl` in `js/main.js` to that origin (for example, `https://your-api.onrender.com`) and push the update.
-5. In GitHub, open **Settings → Pages** and set the build source to **GitHub Actions**. The included workflow deploys the static site on pushes to `main`.
-6. After the first Pages deployment, set `ALLOWED_ORIGINS` in Render to the published site's origin, then check the API health endpoint and test that a message reaches the configured inbox.
+- Website: <https://alamudin52.github.io/Alamudin_portifolio/>
+- Repository: <https://github.com/Alamudin52/Alamudin_portifolio>
 
-Do not add API keys or passwords to this repository. A GitHub repository and hosting account must be created/configured before the project can be published or email delivery can be activated.
+After pushing changes, check the **Actions** tab for a successful **Deploy portfolio to GitHub Pages** run.
 
 ## Personalize
 
@@ -63,12 +55,9 @@ alamudin-portfolio/
 │   ├── contact.js
 │   ├── main.js
 │   └── projects.js
-├── server/
-│   ├── contact-validation.js
-│   ├── contact-validation.test.js
-│   └── index.js
-├── .env.example
+├── .github/workflows/pages.yml
 ├── .gitignore
 ├── index.html
-└── package.json
+├── tests/contact.test.js
+└── LICENSE
 ```

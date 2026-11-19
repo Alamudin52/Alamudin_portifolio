@@ -13,9 +13,21 @@ function initializeContactForm() {
   const submitButton = form.querySelector('button[type="submit"]');
   const submitLabel = document.getElementById("submit-label");
   const config = window.portfolioConfig || {};
-  const apiBaseUrl = typeof config.apiBaseUrl === "string" ? config.apiBaseUrl.trim().replace(/\/+$/, "") : "";
+  const configuredEndpoint = typeof config.formspreeEndpoint === "string" && config.formspreeEndpoint.trim();
+  const formspreeEndpoint = getFormspreeEndpoint(config.formspreeEndpoint);
   let preparedMessage = "";
-  submitLabel.textContent = apiBaseUrl ? "Send message" : "Prepare message";
+  submitLabel.textContent = formspreeEndpoint ? "Send message" : "Prepare message";
+
+  function getFormspreeEndpoint(value) {
+    if (typeof value !== "string" || !value.trim()) return "";
+    try {
+      const endpoint = new URL(value.trim());
+      if (endpoint.origin !== "https://formspree.io" || !/^\/f\/[A-Za-z0-9]+$/.test(endpoint.pathname)) return "";
+      return endpoint.href;
+    } catch {
+      return "";
+    }
+  }
 
   function validateField(name, field) {
     const value = field.input.value.trim();
@@ -53,50 +65,51 @@ function initializeContactForm() {
     }
 
     preparedMessage = `From: ${fields.name.input.value.trim()} <${fields.email.input.value.trim()}>\nSubject: ${fields.subject.input.value.trim()}\n\n${fields.message.input.value.trim()}`;
-    if (apiBaseUrl) {
-      submitButton.disabled = true;
-      copyButton.hidden = true;
-      status.textContent = "Sending your message...";
-      try {
-        const response = await fetch(`${apiBaseUrl}/api/contact`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: fields.name.input.value.trim(),
-            email: fields.email.input.value.trim(),
-            subject: fields.subject.input.value.trim(),
-            message: fields.message.input.value.trim(),
-            website: form.elements.namedItem("website").value
-          })
-        });
-        const result = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error("The contact API rejected the message.");
-
-        status.textContent = result.message || "Your message was sent successfully.";
-        form.reset();
-        preparedMessage = "";
-        Object.values(fields).forEach((field) => {
-          field.input.removeAttribute("aria-invalid");
-          field.error.textContent = "";
-        });
-      } catch {
-        status.textContent = "Your message could not be sent. Please try again or copy your message.";
-        status.classList.add("is-error");
-        copyButton.hidden = false;
-      } finally {
-        submitButton.disabled = false;
-      }
+    if (configuredEndpoint && !formspreeEndpoint) {
+      status.textContent = "The Formspree endpoint is invalid. Check js/main.js; you can also copy your message draft.";
+      status.classList.add("is-error");
+      copyButton.hidden = false;
       return;
     }
 
-    const recipient = config.email;
-    copyButton.hidden = false;
-    if (typeof recipient === "string" && recipient.trim()) {
-      const mailto = `mailto:${encodeURIComponent(recipient.trim())}?subject=${encodeURIComponent(fields.subject.input.value.trim())}&body=${encodeURIComponent(preparedMessage)}`;
-      status.textContent = "Your message is ready in your email app. It has not been sent by this website.";
-      window.location.href = mailto;
-    } else {
-      status.textContent = "Your message is validated and ready to copy. This website does not send or store messages.";
+    if (!formspreeEndpoint) {
+      status.textContent = "The contact form is not connected yet. You can copy your message draft.";
+      copyButton.hidden = false;
+      return;
+    }
+
+    if (form.elements.namedItem("_gotcha").value.trim()) {
+      status.textContent = "Your message could not be sent. Please try again later.";
+      status.classList.add("is-error");
+      return;
+    }
+
+    submitButton.disabled = true;
+    copyButton.hidden = true;
+    status.textContent = "Sending your message...";
+    try {
+      const payload = new FormData(form);
+      payload.set("_subject", fields.subject.input.value.trim());
+      const response = await fetch(formspreeEndpoint, {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: payload
+      });
+      if (!response.ok) throw new Error("The contact form service rejected the message.");
+
+      status.textContent = "Your message was sent successfully.";
+      form.reset();
+      preparedMessage = "";
+      Object.values(fields).forEach((field) => {
+        field.input.removeAttribute("aria-invalid");
+        field.error.textContent = "";
+      });
+    } catch {
+      status.textContent = "Your message could not be sent. Please try again or copy your message.";
+      status.classList.add("is-error");
+      copyButton.hidden = false;
+    } finally {
+      submitButton.disabled = false;
     }
   });
 
@@ -106,7 +119,7 @@ function initializeContactForm() {
       await navigator.clipboard.writeText(preparedMessage);
       status.textContent = "Message copied to your clipboard. It has not been sent.";
       status.classList.remove("is-error");
-    } catch (error) {
+    } catch {
       status.textContent = "Clipboard access is unavailable. Select and copy the message from your form.";
       status.classList.add("is-error");
     }

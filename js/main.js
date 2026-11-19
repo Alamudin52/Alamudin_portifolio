@@ -1,8 +1,6 @@
-// Edit these values with verified contact details before publishing.
+// Add your verified contact details and Formspree endpoint before publishing.
 window.portfolioConfig = {
-  apiBaseUrl: ["localhost", "127.0.0.1"].includes(window.location.hostname)
-    ? "http://localhost:3000"
-    : "",
+  formspreeEndpoint: "",
   githubUrl: "",
   linkedinUrl: "",
   email: "",
